@@ -53,9 +53,10 @@
 
 
           <div class="mb-3">
-              {{ form.image.label(class="form-text") }}
-             {{ form.image(class="form-control", placeholder="Movie image", required=False) }}
-             <div id="imageHelp" class="form-text">Παρακαλώ δώστε μια εικόνα για την ταινία.</div>
+              {{ form.image.label(class="form-label") }}
+              {{ form.image(class="form-control", required=False) }}
+              <div id="movie_imageHelp" class="form-text">
+                Παρακαλώ δώστε μια εικόνα για την ταινία (max size 2mb).</div>
                  {% if form.image.errors %}
                      <ul class="errors">
                          {% for error in form.image.errors%}
@@ -85,8 +86,13 @@
           <div class="mb-3">
             {{ form.release_year.label(class="form-label") }}
             {{ form.release_year(class="form-control", placeholder="Έτος πρώτης προβολής.",required=False) }}
-            <div id="release_year_Help" class="form-text">Εισάγετε το έτος πρώτης προβολής της ταινίας. (Ακέραιος απο το 1888 εως το 2023)</div>
-                {% if form.release_year.errors %}
+            <div id="release_year_Help" class="form-text">Εισάγετε το έτος πρώτης προβολής της ταινίας. (Ακέραιος από το 1888 έως το <span id="current_year"></span>)</div>
+
+            <script>
+              const currentYear = new Date().getFullYear();
+              document.getElementById('current_year').textContent = currentYear;
+            </script>
+                            {% if form.release_year.errors %}
                     <ul class="errors">
                         {% for error in form.release_year.errors%}
                             <li class="alert text-danger"> 

@@ -79,15 +79,15 @@ def root():
     ## με σωστή σελιδοποίηση για την κάθε περίπτωση.
     if ordering == "release_year":
         movies = Movie.query.order_by(desc(Movie.release_year)).paginate(page=page, per_page=5)
-        return render_template("index.html", movies=movies, ordering_by=ordering)
+        return render_template("index.html", movies=movies, ordering=ordering)
     elif ordering == "rating":
         movies = Movie.query.order_by(desc(Movie.rating)).paginate(page=page, per_page=5)
-        return render_template("index.html", movies=movies, ordering_by=ordering)
+        return render_template("index.html", movies=movies, ordering=ordering)
         
-    else:
-        movies = Movie.query.order_by(desc(Movie.insert_date)).paginate(page=page, per_page=5)
+
+    movies = Movie.query.order_by(desc(Movie.insert_date)).paginate(page=page, per_page=5)
     
-    return render_template("index.html", movies=movies, ordering_by=ordering)
+    return render_template("index.html", movies=movies, ordering=ordering)
         
     
     ## Pagination: page value from 'page' parameter from url
@@ -98,7 +98,7 @@ def root():
     ##             μέσω της render_template μέσα στα templates μας
     ##             στην παρακάτω περίπτωση το context περιέχει μόνο το movies=movies
     ## PROSTHESA KAI STO RENDER TEMPLATE OTI ELEIPE @@@@@@@@@@@@@@@@@@@#######################################################
-    ## TA PERASA ME TA ONOMATA TOYS @@@@@@@@@@@@@@@@@@@
+    ## TA PERASA ME TA ONOMATA TOYS 
 
    
 
@@ -107,7 +107,7 @@ def signup():
     ## Έλεγχος για το αν ο χρήστης έχει κάνει login ώστε αν έχει κάνει,
     ## να μεταφέρεται στην αρχική σελίδα
 
-    ## TO TSEKARISMA AN EINAI LOGGED IN @@@@@@@@@@@@@@@@@@@
+    ## TO TSEKARISMA AN EINAI LOGGED IN 
     if current_user.is_authenticated:
         return redirect(url_for("root"))
 
@@ -232,37 +232,34 @@ def logout():
 @login_required
 def new_movie():
     form = NewMovieForm()
-    if request.method == 'POST' and form.validate_on_submit():
-        title = form.title.data
-        plot = form.plot.data
-        release_year = form.release_year.data
-        rating = form.rating.data
-        insert_date = form.insert_date.data
-        user_id = current_user.id
-
-        # Ελέγχουμε αν έχει ανακτηθεί εικόνα και εάν ναι, την μετατρέπουμε σε (640, 640) και την αποθηκεύουμε στο δίσκο και στη βάση
+    if form.validate_on_submit():
+        # Αποθήκευση των υπόλοιπων στοιχείων της ταινίας στη βάση δεδομένων.
         if form.image.data:
             try:
-                image_file = image_save(form.image.data, 'movie_images', (640, 640))
+                image_file = image_save(
+                    form.image.data, 'movies_images', (640, 640))
             except:
                 abort(415)
         else:
-            # Αν δεν υπάρχει εικόνα, χρησιμοποιούμε μια default εικόνα
             image_file = "default_movie_image.png"
-
-        # Δημιουργούμε μια νέα ταινία
-        new_movie = Movie(title=title, plot=plot, image=image_file, release_year=release_year, rating=rating, insert_date=insert_date, user_id=user_id)
-
-        # Προσθέτουμε την ταινία στη βάση δεδομένων
-        db.session.add(new_movie)
+        movie = Movie(
+            title=form.title.data,
+            plot=form.plot.data,
+            image=image_file,
+            rating=form.rating.data,
+            release_year=form.release_year.data,
+            user_id=current_user.id
+        )
+        
+        db.session.add(movie)
         db.session.commit()
+        flash(
+            f'Η ταινία: <b>{movie.title}</b> καταχωρήθηκε με επιτυχία.', 'success')
 
-        flash(f'Η ταινία με τίτλο: "{title}" προστέθηκε με επιτυχία', 'success')
         return redirect(url_for('root'))
-
-    return render_template("new_movie.html", form=form, page_title="Εισαγωγή νέας ταινίας")
-
-
+   
+    return render_template("new_movie.html", form=form, page_title="Εισαγωγή Νέας Ταινίας", current_year=current_year)
+    
 ### Πλήρης σελίδα ταινίας ###
 
 ## Να δοθεί ο σωστός decorator για τη σελίδα με route 'movie'
@@ -279,7 +276,7 @@ def movie(movie_id):
 
 
 
-## ΝΑ ΞΑΝΑΔΩ ΤΟΝ ΚΩΔΙΚΑ ΓΙΑ ΤΟ ΒΥ ΑΥΘΟΡ @@@@@@@@@@@@@@@@@@@@@
+## ΝΑ ΞΑΝΑΔΩ ΤΟΝ ΚΩΔΙΚΑ ΓΙΑ ΤΟ ΒΥ ΑΥΘΟΡ 
 
 
 ### Ταινίες ανά χρήστη που τις ανέβασε ###
@@ -293,21 +290,20 @@ def movies_by_author(author_id):
     page = request.args.get('page', 1, type=int)
     ordering = request.args.get('ordering',1, type=str)
 
-    ## EKANA KAPOIES ALLAGOYLES @@@@@@@@@@@@@@@@@@@
+    ## EKANA KAPOIES ALLAGOYLES 
 
     ## Να προστεθεί σε αυτό το view ότι χρειάζεται για την ταξινόμηση
     ## ανά ημερομηνία εισαγωγής στη βάση, ανά έτος προβολής και ανά rating
     ## με σωστή σελιδοποίηση για την κάθε περίπτωση.
     if ordering == "release_year":
-        movies = Movie.query.order_by(Movie.release_year.desc()).paginate(page=page, per_page=5)
+        movies = Movie.query.filter_by(author=user).order_by(Movie.release_year.desc()).paginate(page=page, per_page=5)
         return render_template("movies_by_author.html", movies=movies, author=user, ordering_by=ordering)
     elif ordering == "rating":
-        movies = Movie.query.order_by(Movie.rating.desc()).paginate(page=page, per_page=5)
-        return render_template("movies_by_author.html", movies=movies, author=user, ordering_by=ordering)
-    else:
-        movies = Movie.query.order_by(Movie.insert_date.desc()).paginate(page=page, per_page=5)
+        movies = Movie.query.filter_by(author=user).order_by(Movie.rating.desc()).paginate(page=page, per_page=5)
         return render_template("movies_by_author.html", movies=movies, author=user, ordering_by=ordering)
 
+    movies = Movie.query.filter_by(author=user).order_by(Movie.insert_date.desc()).paginate(page=page, per_page=5)
+    return render_template("movies_by_author.html", movies=movies, author=user, ordering_by=ordering)
 
      # Επιστροφή του πίνακα με τις ταινίες του χρήστη
      
@@ -330,8 +326,6 @@ def edit_movie(movie_id):
             movie.plot = form.plot.data
             movie.release_year = form.release_year.data
             movie.rating = form.rating.data
-    ## αν ναι, αρχικοποίηση της φόρμας ώστε τα πεδία να είναι προσυμπληρωμένα
-    ## έλεγχος των πεδίων (validation) και αλλαγή (ή προσθήκη εικόνας) στα στοιχεία της ταινίας
             if form.image.data:
                 try:
                     image_file = image_save(form.image.data,'movies_images', (640,640))                

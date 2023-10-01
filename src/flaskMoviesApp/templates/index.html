@@ -111,7 +111,9 @@
             </div>
         </div>
 
-        <!-- Modal για διαγραφή ταινίας -->
+        
+          
+        <!-- διαγραφή ταινίας -->
         <div class="modal fade" id="deleteModal{{ movie.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ movie.id }}" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -133,6 +135,24 @@
             </div>
         </div>
     {% endfor %}
+    <!--  pagination -->
+    <div class="pagination">
+        {% for page_number in movies.iter_pages(left_edge=3, right_edge=3, left_current=1, right_current=2) %}
+          {% if page_number %}
+            {% if page_number == movies.page %}
+              <a class="btn btn-primary" href="{{ url_for('root', page=page_number, ordering_by=ordering_by if ordering_by else None) }}">
+                {{ page_number }}
+              </a>
+            {% else %}
+              <a class="btn btn-outline-primary" href="{{ url_for('root', page=page_number, ordering_by=ordering_by if ordering_by else None) }}">
+                {{ page_number }}
+              </a>
+            {% endif %}
+          {% else %}
+            <span>...</span>
+          {% endif %}
+        {% endfor %}
+      </div>
 {% else %}
     <div class="alert alert-info alert-dismissible fade show" role="alert">Δε βρέθηκε καμμία ταινία</div>
 {% endif %}

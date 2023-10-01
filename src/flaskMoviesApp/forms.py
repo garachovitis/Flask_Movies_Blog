@@ -5,7 +5,6 @@ from wtforms.validators import DataRequired, Email, Length, EqualTo, NumberRange
 from flaskMoviesApp.models import User
 from flask_login import  current_user
 from datetime import datetime as dt
-
 ### Συμπληρώστε κάποια από τα imports που έχουν αφαιρεθεί ###
 
 
@@ -58,7 +57,6 @@ class SignupForm(FlaskForm):
 
 
 
-## DIKA MOY @@@@@@@@@@@@@@
 
 class AccountUpdateForm(FlaskForm):
     username = StringField(label="Username",
@@ -115,12 +113,10 @@ class NewMovieForm(FlaskForm):
     
     ## Υπόθεση Ταινίας, υποχρεωτικό πεδίο κειμένου, από 5 έως απεριόριστο αριθμό χαρακτήρων και το αντίστοιχο label και μήνυμα στον validator
 
-    
     image =  FileField('Εξώφυλλο Ταινίας', validators=[Optional(strip_whitespace=True),
                                                            FileAllowed([ 'jpg', 'jpeg', 'png' ],
                                                             'Επιτρέπονται μόνο αρχεία εικόνων τύπου jpg, jpeg και png!'),
                                                            maxImageSize(max_size=2)])
-
     ## Αρχείο Εικόνας, με επιτρεπόμενους τύπους εικόνων τα 'jpg', 'jpeg', 'png', και μέγιστο μέγεθος αρχείου εικόνας τα 2 MBytes, ΜΗ υποχρεωτικό πεδίο
 
     release_year = IntegerField('Έτος Πρώτης Προβολής',
